@@ -1,0 +1,19 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function verifiedOwner(userId) {
+      return request.auth != null && request.auth.uid == userId && request.auth.token.email_verified == true
+        && firestore.exists(/databases/(default)/documents/users/$(userId))
+        && firestore.get(/databases/(default)/documents/users/$(userId)).data.get('disabled', false) == false
+        && !(firestore.get(/databases/(default)/documents/users/$(userId)).data.get('accountState', '') in ['deleting', 'deleted']);
+    }
+    match /{allPaths=**} { allow read: if true; }
+    match /properties/{userId}/{fileName} {
+      allow create: if resource == null && verifiedOwner(userId) && request.resource.size <= 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|png|webp)');
+      // Existing image files are retained so archived/history snapshots remain restorable.
+      allow update, delete: if false;
+    }
+    match /{allPaths=**} { allow write: if false; }
+  }
+}
