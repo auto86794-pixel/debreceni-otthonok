@@ -381,6 +381,35 @@ html{scroll-behavior:smooth;scroll-padding-top:76px}
 }
 @media(max-width:380px){.mark{font-size:.91rem}.plate{margin-left:16px;margin-right:16px}.hero h1{font-size:1.95rem}}
 </style>
+<script id="do-analytics-consent">
+/* Google Tag Manager loads only after an explicit analytics opt-in. */
+(function(){
+  var KEY='do_analytics_consent_v1';
+  window.dataLayer=window.dataLayer||[];
+  window.doAnalyticsAllowed=false;
+  function load(){
+    if(window.doAnalyticsAllowed)return;
+    window.doAnalyticsAllowed=true;
+    window.dataLayer.push({'gtm.start':Date.now(),event:'gtm.js'});
+    var t=document.createElement('script');t.async=true;
+    t.src='https://www.googletagmanager.com/gtm.js?id=GTM-K3L72BFS';
+    document.head.appendChild(t);
+  }
+  window.doSetAnalyticsConsent=function(allowed){
+    try{localStorage.setItem(KEY,allowed?'accepted':'rejected');}catch(e){}
+    if(allowed)load();
+    document.getElementById('do-consent-banner')?.setAttribute('hidden','');
+  };
+  window.doShowAnalyticsConsent=function(){
+    document.getElementById('do-consent-banner')?.removeAttribute('hidden');
+  };
+  try{if(localStorage.getItem(KEY)==='accepted')load();}catch(e){}
+  document.addEventListener('DOMContentLoaded',function(){
+    var choice=null;try{choice=localStorage.getItem(KEY)}catch(e){}
+    if(choice!=='accepted'&&choice!=='rejected')window.doShowAnalyticsConsent();
+  });
+})();
+</script>
 </head>
 <body>
 
@@ -654,10 +683,33 @@ addEventListener('load',indit);addEventListener('scroll',ker,{passive:true});add
  btn.disabled=true;form.setAttribute('aria-busy','true');status.textContent='Küldés folyamatban…';
  try{const r=await fetch('/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nev:form.nev.value,email:form.email.value,telefon:form.telefon.value,adatkezeles:form.elements.adatkezeles.checked,website:form.elements.website.value})});
  const data=await r.json();if(!r.ok||!data.ok)throw new Error(data.error||'A küldés sikertelen.');
- status.textContent='Köszönjük! Az érdeklődésed sikeresen elküldtük.';form.reset();
+ status.textContent='Köszönjük! Az érdeklődésed sikeresen elküldtük.';
+ if(window.doAnalyticsAllowed&&window.dataLayer)window.dataLayer.push({event:'lead_submit_success'});
+ form.reset();
  }catch(e){status.textContent=e.message||'Hiba történt. Kérjük, próbáld újra.';}
  finally{btn.disabled=false;form.removeAttribute('aria-busy');}
  });
+})();
+</script>
+<style id="do-consent-style">
+#do-consent-banner[hidden]{display:none!important}
+#do-consent-banner{position:fixed;bottom:14px;left:14px;right:14px;z-index:99999;max-width:670px;margin:auto;background:#fff;color:#20372d;border:1px solid #c8d2ca;border-radius:12px;padding:18px;box-shadow:0 10px 38px #0003;font:15px/1.5 system-ui,sans-serif}
+#do-consent-banner p{margin:0 0 12px}
+#do-consent-banner .actions{display:flex;flex-wrap:wrap;gap:10px}
+#do-consent-banner button,#do-consent-settings{cursor:pointer;border:1px solid #315d4a;border-radius:7px;padding:9px 15px;font:inherit}
+#do-consent-yes{background:#315d4a;color:white}#do-consent-no{background:white;color:#20372d}
+#do-consent-settings{background:transparent;color:inherit;border:0;text-decoration:underline;padding:4px 8px}
+</style>
+<div id="do-consent-banner" role="region" aria-label="Látogatottságmérési beállítások" hidden>
+  <p><strong>Látogatottságmérés</strong></p>
+  <p>A weboldal működéséhez nem szükséges Google Analytics mérést csak a hozzájárulásoddal indítjuk el. A döntésed később módosíthatod. Az elutasítás nem befolyásolja az oldal használatát.</p>
+  <div class="actions"><button type="button" id="do-consent-no" onclick="doSetAnalyticsConsent(false)">Elutasítom</button><button type="button" id="do-consent-yes" onclick="doSetAnalyticsConsent(true)">Engedélyezem</button></div>
+</div>
+<script>
+(function(){
+ var b=document.createElement('button');b.type='button';b.id='do-consent-settings';
+ b.textContent='Látogatottságmérési beállítások';b.addEventListener('click',window.doShowAnalyticsConsent);
+ var f=document.querySelector('footer')||document.body;f.appendChild(b);
 })();
 </script>
 </body>
