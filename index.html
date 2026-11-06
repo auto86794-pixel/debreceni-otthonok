@@ -677,15 +677,17 @@ addEventListener('load',indit);addEventListener('scroll',ker,{passive:true});add
 (function(){
  const form=document.getElementById('erdeklodo-form');if(!form)return;
  const status=document.getElementById('kuldes-allapot');const btn=form.querySelector('[type="submit"]');
+ let submissionId=crypto.randomUUID();
+ form.addEventListener('input',()=>{submissionId=crypto.randomUUID();});
  form.addEventListener('submit',async function(event){
  event.preventDefault();status.textContent='';
  if(!form.checkValidity()){form.reportValidity();return;}
  btn.disabled=true;form.setAttribute('aria-busy','true');status.textContent='Küldés folyamatban…';
- try{const r=await fetch('/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nev:form.nev.value,email:form.email.value,telefon:form.telefon.value,adatkezeles:form.elements.adatkezeles.checked,website:form.elements.website.value})});
+ try{const r=await fetch('/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({submissionId,nev:form.nev.value,email:form.email.value,telefon:form.telefon.value,adatkezeles:form.elements.adatkezeles.checked,website:form.elements.website.value})});
  const data=await r.json();if(!r.ok||!data.ok)throw new Error(data.error||'A küldés sikertelen.');
  status.textContent='Köszönjük! Az érdeklődésed sikeresen elküldtük.';
  if(window.doAnalyticsAllowed&&window.dataLayer)window.dataLayer.push({event:'lead_submit_success'});
- form.reset();
+ form.reset();submissionId=crypto.randomUUID();
  }catch(e){status.textContent=e.message||'Hiba történt. Kérjük, próbáld újra.';}
  finally{btn.disabled=false;form.removeAttribute('aria-busy');}
  });

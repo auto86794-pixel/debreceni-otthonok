@@ -3,5 +3,10 @@
   "framework": null,
   "buildCommand": "npm run build",
   "outputDirectory": "public",
-  "cleanUrls": true
+  "cleanUrls": true,
+  "functions": {
+    "api/lead.js": {
+      "maxDuration": 60
+    }
+  }
 }
